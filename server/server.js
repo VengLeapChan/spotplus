@@ -2,14 +2,14 @@ const express = require("express")
 const cors = require("cors")
 const bodyParser = require("body-parser")
 const SpotifyWebApi = require("spotify-web-api-node")
-// const lyricsFinder = require("lyrics-finder")
-const lyricsFinder = require("@jeve/lyrics-finder");
+const lyricsFinder = require("lyrics-finder")
+const Genius = require("genius-lyrics");
+const Client = new Genius.Client("top-secret-optional-key");
 
 const app = express();
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post("/login", (req, res) => {
   const code = req.body.code
@@ -29,6 +29,7 @@ app.post("/login", (req, res) => {
       })
     })
     .catch(err => {
+
       res.sendStatus(400)
     })
 })
@@ -58,12 +59,17 @@ app.post("/refresh", (req, res) => {
 })
 
 app.get("/lyrics", async (req, res) => {
-  const lyrics = await lyricsFinder.LyricsFinder('blinding lights');
+  const lyrics =
+    (await lyricsFinder(req.query.artist, req.query.track)) || "No Lyrics Found"
+  res.json({ lyrics })
+
+  // const searches = await Client.songs.search(req.query.track);
+  // const firstSong = searches[0];
+  // const lyric = await firstSong.lyrics();
+  // console.log(lyric)
 
 
-  console.log(lyrics);
 
 })
-
 
 app.listen(3001)
